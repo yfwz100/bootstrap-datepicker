@@ -790,3 +790,10 @@ fieldset[disabled] .datepicker table tr td span.active.disabled:hover.active {
 .datepicker.datepicker-inline td {
   padding: 0px 5px;
 }
+.datepicker table tr td.highlight,
+.datepicker table tr td.highlight:hover,
+.datepicker table tr td.highlight.disabled,
+.datepicker table tr td.highlight.disabled:hover {
+  background-color: #ccc;
+  font-weight: bold;
+}
