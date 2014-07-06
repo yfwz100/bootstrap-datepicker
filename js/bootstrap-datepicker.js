@@ -85,6 +85,7 @@
 
 	var Datepicker = function(element, options){
 		this.dates = new DateArray();
+	    	this.highlightDates = new DateArray();
 		this.viewDate = UTCToday();
 		this.focusDate = null;
 
@@ -133,6 +134,7 @@
 		this._allow_update = true;
 
 		this.update();
+	    	this._updateHighlightDates();
 		this.showMode();
 
 		if (this.isInline){
@@ -493,6 +495,11 @@
 			this._trigger('changeDate');
 			this.setValue();
 		},
+	    
+	    	setHighlightDates: function() {
+		    	var args = $.isArray(arguments[0]) ? arguments[0] : arguments;
+			this._updateHighlightDates.apply(this, $.map(args, this._utc_to_local));
+		},
 
 		setDate: alias('setDates'),
 		setUTCDate: alias('setUTCDates'),
@@ -662,6 +669,36 @@
 
 			this.fill();
 		},
+	    
+	    	_updateHighlightDates: function(){
+		    	var oldDates = this.highlightDates.copy(),
+			    	args = [],
+				dates = [];
+			if (arguments.length){
+				args = Array.apply(null, arguments);
+			} else {
+			    	args = this.o.highlightDates.split(',');
+			}
+
+		    	$.each(args, $.proxy(function(i, date){
+					if (date instanceof Date)
+						date = this._local_to_utc(date);
+					dates.push(date);
+				}, this));
+			dates = $.map(dates, $.proxy(function(date){
+				return DPGlobal.parseDate(date, this.o.format, this.o.language);
+			}, this));
+			dates = $.grep(dates, $.proxy(function(date){
+				return (
+					date < this.o.startDate ||
+					date > this.o.endDate ||
+					!date
+				);
+			}, this), true);
+			this.highlightDates.replace(dates);
+		    
+		    	this.fill(); // TODO: better way to refresh the view?
+		},
 
 		fillDow: function(){
 			var dowCnt = this.o.weekStart,
@@ -716,6 +753,9 @@
 				date.getUTCMonth() === today.getMonth() &&
 				date.getUTCDate() === today.getDate()){
 				cls.push('today');
+			}
+		    	if (this.highlightDates.contains(date) !== -1) {
+			    	cls.push('highlight');
 			}
 			if (this.dates.contains(date) !== -1)
 				cls.push('active');
@@ -1408,6 +1448,7 @@
 		startView: 0,
 		todayBtn: false,
 		todayHighlight: false,
+	    	highlightDates: [],
 		weekStart: 0
 	};
 	var locale_opts = $.fn.datepicker.locale_opts = [
