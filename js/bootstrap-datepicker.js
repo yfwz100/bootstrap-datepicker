@@ -676,7 +676,7 @@
 				dates = [];
 			if (arguments.length){
 				args = Array.apply(null, arguments);
-			} else {
+			} else if (this.o.highlightDates) {
 			    	args = this.o.highlightDates.split(',');
 			}
 
